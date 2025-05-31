@@ -1,9 +1,9 @@
 <template>
   <div class="dashboard">
     <h1>Dashboard</h1>
-    
+
     <SyncStatus />
-    
+
     <div class="users-section">
       <div class="section-header">
         <h2>Users</h2>
@@ -21,15 +21,15 @@
         <div class="spinner"></div>
         <p>Loading users...</p>
       </div>
-      
+
       <div v-else-if="error" class="error">
         {{ error }}
       </div>
-      
+
       <div v-else-if="filteredUsers.length === 0" class="no-results">
         No users found
       </div>
-      
+
       <div v-else class="users-grid">
         <div v-for="user in filteredUsers" :key="user.id" class="user-card">
           <div class="user-avatar">
@@ -52,15 +52,17 @@
       </div>
 
       <div v-if="filteredUsers.length > 0" class="pagination">
-        <button 
+        <button
           :disabled="currentPage === 1"
           @click="changePage(currentPage - 1)"
           class="page-btn"
         >
           Previous
         </button>
-        <span class="page-info">Page {{ currentPage }} of {{ totalPages }}</span>
-        <button 
+        <span class="page-info"
+          >Page {{ currentPage }} of {{ totalPages }}</span
+        >
+        <button
           :disabled="currentPage === totalPages"
           @click="changePage(currentPage + 1)"
           class="page-btn"
@@ -73,30 +75,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
-import { useSyncStore } from '../stores/sync.store';
-import SyncStatus from '../components/SyncStatus.vue';
-import type { AdaptedUser } from '../types';
+import { ref, computed, onMounted } from "vue";
+import { useSyncStore } from "../stores/sync.store";
+import SyncStatus from "../components/SyncStatus.vue";
+import type { AdaptedUser } from "../types";
+import { apiService } from "@/services/api.service";
 
 const syncStore = useSyncStore();
 const users = ref<AdaptedUser[]>([]);
 const isLoading = ref(true);
 const error = ref<string | null>(null);
-const searchQuery = ref('');
+const searchQuery = ref("");
 const currentPage = ref(1);
 const itemsPerPage = 12;
 
 const filteredUsers = computed(() => {
   const query = searchQuery.value.toLowerCase();
-  return users.value.filter(user => 
-    user.firstName.toLowerCase().includes(query) ||
-    user.lastName.toLowerCase().includes(query) ||
-    user.email.toLowerCase().includes(query) ||
-    user.username.toLowerCase().includes(query)
+  return users.value.filter(
+    (user) =>
+      user.firstName.toLowerCase().includes(query) ||
+      user.lastName.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      user.username.toLowerCase().includes(query)
   );
 });
 
-const totalPages = computed(() => 
+const totalPages = computed(() =>
   Math.ceil(filteredUsers.value.length / itemsPerPage)
 );
 
@@ -107,8 +111,11 @@ const paginatedUsers = computed(() => {
 });
 
 function maskEmail(email: string): string {
-  const [username, domain] = email.split('@');
-  const maskedUsername = username.charAt(0) + '*'.repeat(username.length - 2) + username.charAt(username.length - 1);
+  const [username, domain] = email.split("@");
+  const maskedUsername =
+    username.charAt(0) +
+    "*".repeat(username.length - 2) +
+    username.charAt(username.length - 1);
   return `${maskedUsername}@${domain}`;
 }
 
@@ -125,12 +132,14 @@ function changePage(page: number) {
 }
 
 async function loadUsers() {
+  const result = await apiService.syncUsers();
+
   try {
     isLoading.value = true;
     error.value = null;
     users.value = await syncStore.getUsers();
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load users';
+    error.value = err instanceof Error ? err.message : "Failed to load users";
   } finally {
     isLoading.value = false;
   }
@@ -189,7 +198,7 @@ h1 {
 .user-avatar {
   width: 48px;
   height: 48px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border-radius: 50%;
   display: flex;
@@ -215,7 +224,7 @@ h1 {
 }
 
 .username {
-  color: #4CAF50;
+  color: #4caf50;
   margin: 0;
   font-size: 0.875rem;
 }
@@ -239,7 +248,7 @@ h1 {
 }
 
 .action-btn.edit:hover {
-  color: #2196F3;
+  color: #2196f3;
 }
 
 .action-btn.delete:hover {
@@ -260,14 +269,18 @@ h1 {
   width: 40px;
   height: 40px;
   border: 4px solid #f3f3f3;
-  border-top: 4px solid #4CAF50;
+  border-top: 4px solid #4caf50;
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .error {
@@ -292,7 +305,7 @@ h1 {
 
 .page-btn {
   padding: 0.5rem 1rem;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 4px;
@@ -312,4 +325,4 @@ h1 {
 .page-info {
   color: #666;
 }
-</style> 
+</style>

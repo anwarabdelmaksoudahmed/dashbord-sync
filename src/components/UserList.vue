@@ -27,9 +27,7 @@
       </div>
     </div>
 
-    <div v-if="isLoading" class="loading">
-      Loading more users...
-    </div>
+    <div v-if="isLoading" class="loading">Loading more users...</div>
 
     <div v-if="error" class="error">
       {{ error }}
@@ -38,12 +36,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { useRouter } from 'vue-router';
-import { useIntersectionObserver } from '@vueuse/core';
-import type { User } from '../types';
-import { ApiService } from '../services/api.service';
-import { StorageService } from '../services/storage.service';
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useRouter } from "vue-router";
+import { useIntersectionObserver } from "@vueuse/core";
+import type { User } from "../types";
+import { ApiService } from "../services/api.service";
+import { StorageService } from "../services/storage.service";
 
 const router = useRouter();
 const apiService = new ApiService();
@@ -51,16 +49,16 @@ const storageService = new StorageService();
 
 const users = ref<User[]>([]);
 const isLoading = ref(false);
-const error = ref('');
+const error = ref("");
 const isSyncing = ref(false);
 const lastSyncTime = ref<string | null>(null);
 const currentPage = ref(1);
 const hasMore = ref(true);
 
 const syncStatusText = computed(() => {
-  if (isSyncing.value) return 'Syncing...';
-  if (error.value) return 'Sync failed';
-  return 'Synced';
+  if (isSyncing.value) return "Syncing...";
+  if (error.value) return "Sync failed";
+  return "Synced";
 });
 
 const loadMoreTrigger = ref<HTMLElement | null>(null);
@@ -85,7 +83,7 @@ const loadMoreUsers = async () => {
     hasMore.value = result.hasMore;
     currentPage.value++;
   } catch (err) {
-    error.value = 'Failed to load more users';
+    error.value = "Failed to load more users";
   } finally {
     isLoading.value = false;
   }
@@ -94,7 +92,7 @@ const loadMoreUsers = async () => {
 const handleSync = async () => {
   try {
     isSyncing.value = true;
-    error.value = '';
+    error.value = "";
     const result = await apiService.syncUsers(1);
     users.value = result.users;
     hasMore.value = result.hasMore;
@@ -103,14 +101,14 @@ const handleSync = async () => {
 
     // Save fetched users to IndexedDB
     await storageService.saveUsers(users.value);
-    console.log('Saved', users.value.length, 'users to IndexedDB');
+    console.log("Saved", users.value.length, "users to IndexedDB");
 
     await storageService.updateSyncStatus({
       lastSyncTime: lastSyncTime.value,
-      totalRecords: users.value.length
+      totalRecords: users.value.length,
     });
   } catch (err) {
-    error.value = 'Sync failed';
+    error.value = "Sync failed";
   } finally {
     isSyncing.value = false;
   }
@@ -118,43 +116,51 @@ const handleSync = async () => {
 
 const handleLogout = () => {
   apiService.logout();
-  router.push('/login');
+  router.push("/login");
 };
 
 onMounted(async () => {
   await storageService.init();
-  
+
+  console.log("Storage initialized, loading users...");
+
+  await loadMoreUsers();
+
   // Load users from IndexedDB first for offline support
   try {
     const storedUsers = await storageService.getUsers();
     if (storedUsers && storedUsers.length > 0) {
       users.value = storedUsers;
-      console.log('Loaded users from IndexedDB:', storedUsers.length);
+      console.log("Loaded users from IndexedDB:", storedUsers.length);
     }
   } catch (err) {
-    console.error('Failed to load users from IndexedDB:', err);
+    console.error("Failed to load users from IndexedDB:", err);
   }
 
   const status = await storageService.getSyncStatus();
   if (status) {
     lastSyncTime.value = status.lastSyncTime;
   }
-  
+
   // Then, attempt to sync with the API
   await handleSync();
-  
+
   // Start periodic sync only if initial sync was attempted (regardless of success)
   apiService.startPeriodicSync(async (newUsers) => {
     users.value = newUsers;
     lastSyncTime.value = new Date().toISOString();
-    
+
     // Save fetched users from periodic sync to IndexedDB
     await storageService.saveUsers(newUsers);
-    console.log('Saved', newUsers.length, 'users from periodic sync to IndexedDB');
+    console.log(
+      "Saved",
+      newUsers.length,
+      "users from periodic sync to IndexedDB"
+    );
 
     await storageService.updateSyncStatus({
       lastSyncTime: lastSyncTime.value,
-      totalRecords: newUsers.length
+      totalRecords: newUsers.length,
     });
   });
 });
@@ -260,4 +266,4 @@ onUnmounted(() => {
   border-radius: 4px;
   margin: 1rem 0;
 }
-</style> 
+</style>
