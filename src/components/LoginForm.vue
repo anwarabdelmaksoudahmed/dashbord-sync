@@ -2,11 +2,11 @@
   <div class="login-container">
     <form @submit.prevent="handleSubmit" class="login-form">
       <h2>Login</h2>
-      
-      <div class="connection-status" :class="{ 'offline': !isOnline }">
-        {{ isOnline ? 'Online Mode' : 'Offline Mode' }}
+
+      <div class="connection-status" :class="{ offline: !props.isOnline }">
+        {{ props.isOnline ? "Online Mode" : "Offline Mode" }}
       </div>
-      
+
       <div class="form-group">
         <label for="username">Username</label>
         <input
@@ -33,53 +33,40 @@
         {{ error }}
       </div>
 
-      <div v-if="!isOnline" class="offline-message">
-        You are currently offline. You can still log in using cached credentials.
+      <div v-if="!props.isOnline" class="offline-message">
+        You are currently offline. You can still log in using cached
+        credentials.
       </div>
 
       <button type="submit" :disabled="isLoading">
-        {{ isLoading ? 'Logging in...' : 'Login' }}
+        {{ isLoading ? "Logging in..." : "Login" }}
       </button>
     </form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from '../stores/auth.store';
+import { ref, defineProps } from "vue";
+import { useRouter } from "vue-router";
+import { useAuthStore } from "../stores/auth.store";
 
+const props = defineProps(["isOnline"]);
 const router = useRouter();
 const authStore = useAuthStore();
 
-const username = ref('');
-const password = ref('');
+const username = ref("");
+const password = ref("");
 const isLoading = ref(false);
 const error = ref<string | null>(null);
-const isOnline = ref(navigator.onLine);
-
-function updateOnlineStatus() {
-  isOnline.value = navigator.onLine;
-}
-
-onMounted(() => {
-  window.addEventListener('online', updateOnlineStatus);
-  window.addEventListener('offline', updateOnlineStatus);
-});
-
-onUnmounted(() => {
-  window.removeEventListener('online', updateOnlineStatus);
-  window.removeEventListener('offline', updateOnlineStatus);
-});
 
 async function handleSubmit() {
   try {
     isLoading.value = true;
     error.value = null;
     await authStore.login(username.value, password.value);
-    router.push('/dashboard');
+    router.push("/dashboard");
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Login failed';
+    error.value = err instanceof Error ? err.message : "Login failed";
   } finally {
     isLoading.value = false;
   }
@@ -109,7 +96,7 @@ async function handleSubmit() {
   padding: 0.5rem;
   margin-bottom: 1rem;
   border-radius: 4px;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   font-size: 0.875rem;
 }
@@ -139,7 +126,7 @@ input {
 button {
   width: 100%;
   padding: 0.75rem;
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
   border: none;
   border-radius: 4px;
@@ -172,4 +159,4 @@ button:disabled {
   margin-bottom: 1rem;
   font-size: 0.875rem;
 }
-</style> 
+</style>

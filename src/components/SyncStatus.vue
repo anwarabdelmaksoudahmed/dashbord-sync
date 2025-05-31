@@ -1,18 +1,20 @@
 <template>
-  <div class="sync-status" :class="{ 'is-syncing': isSyncing, 'is-offline': !isOnline }">
+  <div
+    class="sync-status"
+    :class="{ 'is-syncing': isSyncing, 'is-offline': !props.isOnline }"
+  >
     <div class="sync-info">
-      <span class="status-indicator" :class="{ 'syncing': isSyncing, 'offline': !isOnline }"></span>
-      <span class="status-text">
-        {{ statusText }}
+      <span
+        class="status-indicator"
+        :class="{ syncing: isSyncing, offline: !props.isOnline }"
+      ></span>
+      <span class="connection-status" :class="{ offline: !props.isOnline }">
+        {{ props.isOnline ? "Online" : "Offline" }}
       </span>
     </div>
-    
+
     <div v-if="lastSyncTime" class="sync-details">
-      <p>Last sync: {{ formatDate(lastSyncTime) }}</p>
-      <p>Total records: {{ totalRecords }}</p>
-      <p class="connection-status" :class="{ 'offline': !isOnline }">
-        {{ isOnline ? 'Online' : 'Offline' }}
-      </p>
+      <p><b>Last sync:</b> {{ formatDate(lastSyncTime) }}</p>
     </div>
 
     <div v-if="error" class="error-message">
@@ -22,20 +24,13 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useSyncStore } from '../stores/sync.store';
-import { storeToRefs } from 'pinia';
+import { defineProps } from "vue";
+import { useSyncStore } from "../stores/sync.store";
+import { storeToRefs } from "pinia";
 
+const props = defineProps(["isOnline"]);
 const syncStore = useSyncStore();
 const { isSyncing, lastSyncTime, totalRecords, error } = storeToRefs(syncStore);
-
-const isOnline = computed(() => navigator.onLine);
-
-const statusText = computed(() => {
-  if (!isOnline.value) return 'Offline Mode';
-  if (isSyncing.value) return 'Syncing...';
-  return 'Sync Status';
-});
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleString();
@@ -61,7 +56,7 @@ function formatDate(timestamp: number): string {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background-color: #4CAF50;
+  background-color: #4caf50;
 }
 
 .status-indicator.syncing {
@@ -80,9 +75,8 @@ function formatDate(timestamp: number): string {
 }
 
 .connection-status {
-  margin-top: 0.5rem;
   font-weight: 500;
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .connection-status.offline {
@@ -106,4 +100,4 @@ function formatDate(timestamp: number): string {
     opacity: 1;
   }
 }
-</style> 
+</style>

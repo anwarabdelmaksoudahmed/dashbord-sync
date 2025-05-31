@@ -2,7 +2,7 @@
   <div class="dashboard">
     <h1>Dashboard</h1>
 
-    <SyncStatus />
+    <SyncStatus :isOnline="props.isOnline" />
 
     <div class="users-section">
       <div class="section-header">
@@ -75,11 +75,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, defineProps } from "vue";
 import { useSyncStore } from "../stores/sync.store";
 import SyncStatus from "../components/SyncStatus.vue";
 import type { AdaptedUser } from "../types";
-import { apiService } from "@/services/api.service";
+
+const props = defineProps(["isOnline"]);
 
 const syncStore = useSyncStore();
 const users = ref<AdaptedUser[]>([]);
@@ -92,7 +93,7 @@ const itemsPerPage = 12;
 const filteredUsers = computed(() => {
   const query = searchQuery.value.toLowerCase();
   return users.value.filter(
-    (user) =>
+    (user: AdaptedUser) =>
       user.firstName.toLowerCase().includes(query) ||
       user.lastName.toLowerCase().includes(query) ||
       user.email.toLowerCase().includes(query) ||
@@ -103,12 +104,6 @@ const filteredUsers = computed(() => {
 const totalPages = computed(() =>
   Math.ceil(filteredUsers.value.length / itemsPerPage)
 );
-
-const paginatedUsers = computed(() => {
-  const start = (currentPage.value - 1) * itemsPerPage;
-  const end = start + itemsPerPage;
-  return filteredUsers.value.slice(start, end);
-});
 
 function maskEmail(email: string): string {
   const [username, domain] = email.split("@");
@@ -132,11 +127,10 @@ function changePage(page: number) {
 }
 
 async function loadUsers() {
-  const result = await apiService.syncUsers();
-
   try {
-    isLoading.value = true;
     error.value = null;
+    isLoading.value = true;
+
     users.value = await syncStore.getUsers();
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to load users";

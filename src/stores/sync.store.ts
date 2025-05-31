@@ -1,10 +1,10 @@
-import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import { apiService } from '../services/api.service';
-import { dbService } from '../services/db.service';
-import type { AdaptedUser } from '../types';
+import { defineStore } from "pinia";
+import { ref } from "vue";
+import { apiService } from "../services/api.service";
+import { dbService } from "../services/db.service";
+import type { AdaptedUser } from "../types";
 
-export const useSyncStore = defineStore('sync', () => {
+export const useSyncStore = defineStore("sync", () => {
   const isSyncing = ref(false);
   const lastSyncTime = ref<number | null>(null);
   const totalRecords = ref(0);
@@ -12,7 +12,9 @@ export const useSyncStore = defineStore('sync', () => {
 
   async function initialize() {
     await dbService.init();
+
     const status = await dbService.getSyncStatus();
+
     if (status) {
       lastSyncTime.value = status.lastSync;
       totalRecords.value = status.totalRecords;
@@ -20,12 +22,18 @@ export const useSyncStore = defineStore('sync', () => {
   }
 
   async function startSync() {
+    // Prevent duplicate sync operations
+    if (isSyncing.value) {
+      return;
+    }
+
     try {
       isSyncing.value = true;
       error.value = null;
-      await apiService.startPeriodicSync();
+
+      await apiService.startSync();
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Sync failed';
+      error.value = err instanceof Error ? err.message : "Sync failed";
       throw err;
     } finally {
       isSyncing.value = false;
@@ -43,6 +51,6 @@ export const useSyncStore = defineStore('sync', () => {
     error,
     initialize,
     startSync,
-    getUsers
+    getUsers,
   };
-}); 
+});

@@ -264,22 +264,10 @@ export class ApiService {
     return bcrypt.compare(plainPassword, hashedPassword);
   }
 
-  async startPeriodicSync(): Promise<void> {
+  async startSync(): Promise<void> {
     try {
       // Initial sync
       await this.syncUsers();
-
-      // Set up periodic sync
-      setInterval(async () => {
-        if (navigator.onLine) {
-          await this.syncUsers();
-        }
-      }, this.config.syncInterval);
-
-      // Listen for online status changes
-      window.addEventListener("online", async () => {
-        await this.syncUsers();
-      });
 
       window.addEventListener("offline", async () => {
         await dbService.updateSyncStatus(0, false);

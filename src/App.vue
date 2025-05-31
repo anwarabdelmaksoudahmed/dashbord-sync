@@ -1,42 +1,81 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { useAuthStore } from './stores/auth.store';
-import { useSyncStore } from './stores/sync.store';
-import { storeToRefs } from 'pinia';
-
-console.log('App.vue setup starting...');
+import { useRouter } from "vue-router";
+import { useAuthStore } from "./stores/auth.store";
+import { useSyncStore } from "./stores/sync.store";
+import { storeToRefs } from "pinia";
+import { ref, Ref, onMounted, onUnmounted } from "vue";
+import SyncProgress from "./components/SyncProgress.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const syncStore = useSyncStore();
+const isOnline = ref(navigator.onLine);
+const syncIntervalRef: Ref<number | null> = ref(null);
 const { isAuthenticated } = storeToRefs(authStore);
 
-console.log('Initial authentication state:', isAuthenticated.value);
+const syncInterval: number = 60000; // 1 minute
+
+function updateOnlineStatus() {
+  isOnline.value = navigator.onLine;
+
+  // When entering offline mode, clear the sync interval
+  if (!isOnline.value) {
+    resetSyncInterval();
+  }
+
+  if (isOnline.value) {
+    syncStore.startSync();
+
+    resetSyncInterval();
+
+    registerSyncInterval();
+  }
+}
+
+console.log("Initial authentication state:", isAuthenticated.value);
 
 onMounted(async () => {
-  console.log('App.vue mounted, initializing...');
+  window.addEventListener("online", updateOnlineStatus);
+  window.addEventListener("offline", updateOnlineStatus);
+
   try {
     await syncStore.initialize();
-    console.log('Sync store initialized');
-    
-    if (isAuthenticated.value) {
-      console.log('User is authenticated, starting sync...');
-      await syncStore.startSync();
-      console.log('Sync started successfully');
-    } else {
-      console.log('User is not authenticated');
+
+    if (isOnline.value) {
+      syncStore.startSync();
+      registerSyncInterval();
     }
   } catch (error) {
-    console.error('Error during initialization:', error);
+    console.error("Error during initialization:", error);
   }
 });
 
+onUnmounted(() => {
+  window.removeEventListener("online", updateOnlineStatus);
+  window.removeEventListener("offline", updateOnlineStatus);
+});
+
+function resetSyncInterval() {
+  if (syncIntervalRef.value) {
+    clearInterval(syncIntervalRef.value);
+    syncIntervalRef.value = null;
+  }
+}
+
+function registerSyncInterval() {
+  if (syncIntervalRef.value) return;
+
+  syncIntervalRef.value = setInterval(() => {
+    if (isOnline.value) {
+      syncStore.startSync();
+    }
+  }, syncInterval);
+}
+
 async function handleLogout() {
-  console.log('Logout initiated');
   authStore.logout();
-  router.push('/login');
-  console.log('Redirected to login page');
+
+  router.push("/login");
 }
 </script>
 
@@ -47,9 +86,11 @@ async function handleLogout() {
       <button @click="handleLogout" class="logout-btn">Logout</button>
     </nav>
 
+    <SyncProgress />
+
     <router-view v-slot="{ Component }">
       <transition name="fade" mode="out-in">
-        <component :is="Component" />
+        <component :is="Component" :isOnline="isOnline" />
       </transition>
     </router-view>
   </div>
@@ -77,7 +118,7 @@ async function handleLogout() {
 }
 
 .nav a.router-link-active {
-  color: #4CAF50;
+  color: #4caf50;
 }
 
 .logout-btn {
