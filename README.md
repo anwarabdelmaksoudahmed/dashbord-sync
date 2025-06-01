@@ -1,6 +1,5 @@
 # User Sync Application
-
-A professional Vue.js frontend application that implements user synchronization with encrypted data handling, authentication, and offline capabilities. Built as a Progressive Web App (PWA) using Vite.
+Vue.js frontend application that implements user synchronization with encrypted data handling, authentication, and offline capabilities. Built as a Progressive Web App (PWA) using Vite.
 
 ## Features
 
@@ -69,8 +68,11 @@ npm run test
 ```
 src/
 ├── components/         # Vue components
-│   ├── Login.vue      # Login page component
-│   └── UserList.vue   # User list component
+│   ├── LoginForm.vue     
+│   └── syncProgress.vue
+   └── syncStatus.vue    
+
+
 ├── services/          # Core services
 │   ├── api.service.ts # API communication
 │   ├── encryption.service.ts # Data encryption
