@@ -30,7 +30,7 @@ import { storeToRefs } from "pinia";
 
 const props = defineProps(["isOnline"]);
 const syncStore = useSyncStore();
-const { isSyncing, lastSyncTime, totalRecords, error } = storeToRefs(syncStore);
+const { isSyncing, lastSyncTime, error } = storeToRefs(syncStore);
 
 function formatDate(timestamp: number): string {
   return new Date(timestamp).toLocaleString();

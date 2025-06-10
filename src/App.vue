@@ -3,14 +3,14 @@ import { useRouter } from "vue-router";
 import { useAuthStore } from "./stores/auth.store";
 import { useSyncStore } from "./stores/sync.store";
 import { storeToRefs } from "pinia";
-import { ref, Ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import SyncProgress from "./components/SyncProgress.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
 const syncStore = useSyncStore();
 const isOnline = ref(navigator.onLine);
-const syncIntervalRef: Ref<number | null> = ref(null);
+const syncIntervalRef = ref<number | null>(null);
 const { isAuthenticated } = storeToRefs(authStore);
 
 const syncInterval: number = 60000; // 1 minute
@@ -65,7 +65,7 @@ function resetSyncInterval() {
 function registerSyncInterval() {
   if (syncIntervalRef.value) return;
 
-  syncIntervalRef.value = setInterval(() => {
+  syncIntervalRef.value = window.setInterval(() => {
     if (isOnline.value) {
       syncStore.startSync();
     }

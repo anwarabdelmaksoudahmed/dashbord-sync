@@ -95,7 +95,7 @@ export class StorageService {
     });
   }
 
-  private adaptUserData(user: User): User {
+  private adaptUserData(user: User): User & { firstName: string; lastName: string } {
     // Split name into firstName and lastName
     const [firstName, ...lastNameParts] = user.name.split(' ');
     const lastName = lastNameParts.join(' ');

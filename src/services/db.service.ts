@@ -1,5 +1,5 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
-import type { User, AdaptedUser } from '../types';
+import type { AdaptedUser } from '../types';
 import { maskAdaptedUserData } from '../utils/data-masker';
 
 interface SyncAppDB extends DBSchema {

@@ -105,15 +105,6 @@ const totalPages = computed(() =>
   Math.ceil(filteredUsers.value.length / itemsPerPage)
 );
 
-function maskEmail(email: string): string {
-  const [username, domain] = email.split("@");
-  const maskedUsername =
-    username.charAt(0) +
-    "*".repeat(username.length - 2) +
-    username.charAt(username.length - 1);
-  return `${maskedUsername}@${domain}`;
-}
-
 function getUserInitials(user: AdaptedUser): string {
   return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`;
 }

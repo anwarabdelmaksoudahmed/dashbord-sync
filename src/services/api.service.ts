@@ -1,6 +1,5 @@
 import type {
   ApiResponse,
-  EncryptedData,
   LoginCredentials,
   User,
   AdaptedUser,
@@ -22,68 +21,25 @@ export class ApiService {
     this.config = { ...this.defaultConfig, ...config };
   }
 
-  private async fetchWithDecryption<T>(url: string): Promise<T> {
+  private async fetchWithDecryption<T>(url: string, options?: RequestInit): Promise<T> {
     try {
-      if (!navigator.onLine) {
-        // Try to get data from cache
-        const cachedData = await this.getCachedData<T>(url);
-        if (cachedData) {
-          return cachedData;
-        }
-        throw new Error("No internet connection and no cached data available");
-      }
-
-      const response = await fetch(url);
+      const response = await fetch(url, options);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: ApiResponse<EncryptedData> = await response.json();
 
-      if (!data.success) {
-        throw new Error(data.message || "API request failed");
+      const data = await response.json();
+      const decryptedData = await EncryptionService.decryptResponse(data);
+
+      if (!decryptedData) {
+        throw new Error('Failed to decrypt response');
       }
 
-      console.log("API Response:", data);
-      console.log("Encrypted data:", data.data);
-
-      const decryptedData = await EncryptionService.decryptResponse(data.data);
-      console.log("Decrypted data:", decryptedData);
-
-      // Cache the data for offline use
-      await this.cacheData(url, decryptedData);
-
-      return decryptedData;
+      return decryptedData as T;
     } catch (error) {
-      console.error("API request failed:", error);
+      console.error('Fetch failed:', error);
       throw error;
     }
-  }
-
-  private async getCachedData<T>(url: string): Promise<T | null> {
-    try {
-      const cacheKey = this.getCacheKey(url);
-      const cachedData = localStorage.getItem(cacheKey);
-      if (cachedData) {
-        return JSON.parse(cachedData);
-      }
-      return null;
-    } catch (error) {
-      console.error("Failed to get cached data:", error);
-      return null;
-    }
-  }
-
-  private async cacheData<T>(url: string, data: T): Promise<void> {
-    try {
-      const cacheKey = this.getCacheKey(url);
-      localStorage.setItem(cacheKey, JSON.stringify(data));
-    } catch (error) {
-      console.error("Failed to cache data:", error);
-    }
-  }
-
-  private getCacheKey(url: string): string {
-    return `cache_${url.replace(/[^a-zA-Z0-9]/g, "_")}`;
   }
 
   async login(credentials: LoginCredentials): Promise<User> {
