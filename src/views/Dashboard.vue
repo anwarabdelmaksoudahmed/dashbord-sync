@@ -31,14 +31,14 @@
       </div>
 
       <div v-else class="users-grid">
+       
         <div v-for="user in filteredUsers" :key="user.id" class="user-card">
           <div class="user-avatar">
             {{ getUserInitials(user) }}
+           
           </div>
           <div class="user-info">
-            <h3>{{ user.firstName }} {{ user.lastName }}</h3>
-            <p class="email">{{ maskEmail(user.email) }}</p>
-            <p class="username">@{{ user.username }}</p>
+            {{ user.username }}
           </div>
           <div class="user-actions">
             <button class="action-btn edit" title="Edit user">

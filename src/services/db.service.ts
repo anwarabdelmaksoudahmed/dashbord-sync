@@ -1,5 +1,6 @@
 import { openDB, DBSchema, IDBPDatabase } from 'idb';
 import type { User, AdaptedUser } from '../types';
+import { maskAdaptedUserData } from '../utils/data-masker';
 
 interface SyncAppDB extends DBSchema {
   users: {
@@ -10,6 +11,7 @@ interface SyncAppDB extends DBSchema {
   syncStatus: {
     key: string;
     value: {
+      id: string;
       lastSync: number;
       totalRecords: number;
       isOnline: boolean;
@@ -18,6 +20,7 @@ interface SyncAppDB extends DBSchema {
   offlineQueue: {
     key: string;
     value: {
+      id: string;
       action: 'create' | 'update' | 'delete';
       data: any;
       timestamp: number;
@@ -56,7 +59,12 @@ class DatabaseService {
     const store = tx.objectStore('users');
 
     for (const user of users) {
-      await store.put(user);
+      // Only mask non-password fields
+      const maskedUser = {
+        ...maskAdaptedUserData(user),
+        password: user.password // Keep the original password hash
+      };
+      await store.put(maskedUser);
     }
 
     await tx.done;
