@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="/dashbord-sync/manifest.json">
+    <title>Sync App</title>
+    <script type="module" crossorigin src="/dashbord-sync/assets/index-dfd7d6bf.js"></script>
+    <link rel="modulepreload" crossorigin href="/dashbord-sync/assets/vendor-138a5586.js">
+    <link rel="stylesheet" href="/dashbord-sync/assets/index-357f9728.css">
+  </head>
+  <body>
+    <div id="app"></div>
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(registration => {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(err => {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
+  </body>
+</html> 
