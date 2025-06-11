@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="icon" href="/dashbord-sync/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="manifest" href="/dashbord-sync/manifest.json">
     <title>Sync App</title>
@@ -16,7 +16,7 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
+          navigator.serviceWorker.register('/dashbord-sync/sw.js')
             .then(registration => {
               console.log('ServiceWorker registration successful');
             })
